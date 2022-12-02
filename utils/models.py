@@ -5,6 +5,8 @@ import numpy as np
 
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.svm import LinearSVC
 from sklearn.metrics import recall_score, precision_score, accuracy_score, f1_score, confusion_matrix
 import matplotlib.pyplot as plt
 
@@ -39,6 +41,38 @@ def train_three_models(X_train, y_train):
     }
 
     return models
+
+def train_models(X_train, y_train):
+    '''
+    Construct and train ['dt', 'rfc', 'svc', 'lr', 'nn']
+
+    ---
+    Return -> A dictionary container three trained models.
+    '''
+    nn = tf.keras.models.Sequential(
+            [
+                tf.keras.layers.Dense(24,activation='relu'),
+                tf.keras.layers.Dense(12,activation='relu'),
+                tf.keras.layers.Dense(12,activation='relu'),
+                tf.keras.layers.Dense(12,activation='relu'),
+                tf.keras.layers.Dense(12,activation='relu'),
+                tf.keras.layers.Dense(1),
+                tf.keras.layers.Activation(tf.nn.sigmoid),
+            ]
+        )
+    nn.compile(optimizer="Adam", loss='binary_crossentropy', metrics=['accuracy'])
+    nn.fit(X_train, y_train, batch_size=64, epochs=20, shuffle=True)
+
+    models = {
+        "dt": DecisionTreeClassifier().fit(X_train,y_train),
+        "rfc": RandomForestClassifier().fit(X_train,y_train),
+        "svc": LinearSVC().fit(X_train,y_train),
+        "lr": LogisticRegression().fit(X_train,y_train),
+        "nn": nn,
+    }
+
+    return models
+
 
 def train_three_models_lp(X_train, y_train):
     '''
@@ -75,9 +109,16 @@ def evaluation_test(models, X_test, y_test):
     Evaluation the trained models.
     '''
 
-    dt_pred = models['dt'].predict(X_test)
-    rfc_pred = models['rfc'].predict(X_test)
-    nn_pred = (models['nn'].predict(X_test) > 0.5).flatten().astype(int)
+    if 'dt' in models.keys():
+        dt_pred = models['dt'].predict(X_test)
+    if 'rfc' in models.keys():
+        rfc_pred = models['rfc'].predict(X_test)
+    if 'svc' in models.keys():
+        svc_pred = models['svc'].predict(X_test)
+    if 'lr' in models.keys():
+        lr_pred = models['lr'].predict(X_test)
+    if 'nn' in models.keys():
+        nn_pred = (models['nn'].predict(X_test) > 0.5).flatten().astype(int)
 
     # dt_acc = (models['dt'].predict(X_test) == y_test).astype(int).sum() / X_test.shape[0]
     # rfc_acc = (models['rfc'].predict(X_test) == y_test).astype(int).sum() / X_test.shape[0]
@@ -85,9 +126,16 @@ def evaluation_test(models, X_test, y_test):
 
 
     #### DT model 
-    print_eval_states(y_test, dt_pred, name="Decision Tree")
-    print_eval_states(y_test, rfc_pred, name="Random Forest")
-    print_eval_states(y_test, nn_pred, name="Neural Network")
+    if 'dt' in models.keys():
+        print_eval_states(y_test, dt_pred, name="Decision Tree")
+    if 'rfc' in models.keys():
+        print_eval_states(y_test, rfc_pred, name="Random Forest")
+    if 'svc' in models.keys():
+        print_eval_states(y_test, svc_pred, name="Linear Support Vector Classification")
+    if 'lr' in models.keys():
+        print_eval_states(y_test, lr_pred, name="Logistic Regression")
+    if 'nn' in models.keys():
+        print_eval_states(y_test, nn_pred, name="Neural Network")
 
 
 def print_eval_states(y_test, y_pred, name=None):
@@ -122,6 +170,24 @@ def save_three_models(models, dataset_name, path='./saved_models'):
     pickle.dump(models['rfc'], open(f'{storing_folder}/rfc.p', 'wb'))
     models['nn'].save(f'{storing_folder}/nn.h5',overwrite=True)
 
+def save_models(models, dataset_name, path='./saved_models'):
+    '''
+    Save trained models to desired `path`.
+    '''
+    storing_folder= f'{path}/{dataset_name}'
+    os.makedirs(storing_folder, exist_ok=True)
+
+    if 'dt' in models.keys():
+        pickle.dump(models['dt'], open(f'{storing_folder}/dt.p', 'wb'))
+    if 'rfc' in models.keys():
+        pickle.dump(models['rfc'], open(f'{storing_folder}/rfc.p', 'wb'))
+    if 'svc' in models.keys():
+        pickle.dump(models['svc'], open(f'{storing_folder}/svc.p', 'wb'))
+    if 'lr' in models.keys():
+        pickle.dump(models['lr'], open(f'{storing_folder}/lr.p', 'wb'))
+    if 'nn' in models.keys():
+        models['nn'].save(f'{storing_folder}/nn.h5',overwrite=True)
+
 def save_lp_three_models(models, dataset_name, path='./saved_models'):
     '''
     Save three trained models to desired `path`.
@@ -145,6 +211,26 @@ def load_three_models(num_features, dataset_name, path='./saved_models'):
     models = {}
     models['dt'] = pickle.load(open(f'{storing_folder}/dt.p', 'rb'))
     models['rfc'] = pickle.load(open(f'{storing_folder}/rfc.p', 'rb'))
+    models['nn'] = tf.keras.models.load_model(f'{storing_folder}/nn.h5')
+
+    ## Initialise NN output shape as (None, 1) for tensorflow.v1
+    models['nn'].predict(np.zeros((2, num_features)))
+
+    return models
+
+def load_models(num_features, dataset_name, path='./saved_models'):
+    '''
+    Load pre-trained model from the `path`.  Will be saved in `./saved_models` by default
+    '''
+
+    storing_folder= f'{path}/{dataset_name}'
+
+    ### Load
+    models = {}
+    models['dt'] = pickle.load(open(f'{storing_folder}/dt.p', 'rb'))
+    models['rfc'] = pickle.load(open(f'{storing_folder}/rfc.p', 'rb'))
+    models['svc'] = pickle.load(open(f'{storing_folder}/svc.p', 'rb'))
+    models['lr'] = pickle.load(open(f'{storing_folder}/lr.p', 'rb'))
     models['nn'] = tf.keras.models.load_model(f'{storing_folder}/nn.h5')
 
     ## Initialise NN output shape as (None, 1) for tensorflow.v1
