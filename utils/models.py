@@ -46,6 +46,9 @@ def train_models(X_train, y_train):
     '''
     Construct and train ['dt', 'rfc', 'svc', 'lr', 'nn']
 
+    nn - one output unit for binary classification (sigmoid)
+    nn2 - two output units for binary classification (softmax)
+
     ---
     Return -> A dictionary container three trained models.
     '''
@@ -63,12 +66,27 @@ def train_models(X_train, y_train):
     nn.compile(optimizer="Adam", loss='binary_crossentropy', metrics=['accuracy'])
     nn.fit(X_train, y_train, batch_size=64, epochs=20, shuffle=True)
 
+    nn_2 = tf.keras.models.Sequential(
+            [
+                tf.keras.layers.Dense(24,activation='relu'),
+                tf.keras.layers.Dense(12,activation='relu'),
+                tf.keras.layers.Dense(12,activation='relu'),
+                tf.keras.layers.Dense(12,activation='relu'),
+                tf.keras.layers.Dense(12,activation='relu'),
+                tf.keras.layers.Dense(2),
+                tf.keras.layers.Activation(tf.nn.softmax),
+            ]
+        )
+    nn_2.compile(optimizer="Adam", loss='SparseCategoricalCrossentropy', metrics=['accuracy'])
+    nn_2.fit(X_train, y_train, batch_size=64, epochs=20, shuffle=True)
+
     models = {
         "dt": DecisionTreeClassifier().fit(X_train,y_train),
         "rfc": RandomForestClassifier().fit(X_train,y_train),
         "svc": LinearSVC().fit(X_train,y_train),
         "lr": LogisticRegression().fit(X_train,y_train),
         "nn": nn,
+        "nn_2": nn_2,
     }
 
     return models
@@ -119,6 +137,8 @@ def evaluation_test(models, X_test, y_test):
         lr_pred = models['lr'].predict(X_test)
     if 'nn' in models.keys():
         nn_pred = (models['nn'].predict(X_test) > 0.5).flatten().astype(int)
+    if 'nn_2' in models.keys():
+        nn_2_pred = models['nn_2'].predict(X_test).argmax(axis=1).flatten().astype(int)
 
     # dt_acc = (models['dt'].predict(X_test) == y_test).astype(int).sum() / X_test.shape[0]
     # rfc_acc = (models['rfc'].predict(X_test) == y_test).astype(int).sum() / X_test.shape[0]
@@ -135,7 +155,9 @@ def evaluation_test(models, X_test, y_test):
     if 'lr' in models.keys():
         print_eval_states(y_test, lr_pred, name="Logistic Regression")
     if 'nn' in models.keys():
-        print_eval_states(y_test, nn_pred, name="Neural Network")
+        print_eval_states(y_test, nn_pred, name="Neural Network (single output unit)")
+    if 'nn_2' in models.keys():
+        print_eval_states(y_test, nn_2_pred, name="Neural Network (two output units)")
 
 
 def print_eval_states(y_test, y_pred, name=None):
@@ -187,6 +209,8 @@ def save_models(models, dataset_name, path='./saved_models'):
         pickle.dump(models['lr'], open(f'{storing_folder}/lr.p', 'wb'))
     if 'nn' in models.keys():
         models['nn'].save(f'{storing_folder}/nn.h5',overwrite=True)
+    if 'nn_2' in models.keys():
+        models['nn_2'].save(f'{storing_folder}/nn_2.h5',overwrite=True)
 
 def save_lp_three_models(models, dataset_name, path='./saved_models'):
     '''
@@ -232,9 +256,12 @@ def load_models(num_features, dataset_name, path='./saved_models'):
     models['svc'] = pickle.load(open(f'{storing_folder}/svc.p', 'rb'))
     models['lr'] = pickle.load(open(f'{storing_folder}/lr.p', 'rb'))
     models['nn'] = tf.keras.models.load_model(f'{storing_folder}/nn.h5')
+    models['nn_2'] = tf.keras.models.load_model(f'{storing_folder}/nn_2.h5')
 
     ## Initialise NN output shape as (None, 1) for tensorflow.v1
     models['nn'].predict(np.zeros((2, num_features)))
+    models['nn_2'].predict(np.zeros((2, num_features)))
+
 
     return models
 
