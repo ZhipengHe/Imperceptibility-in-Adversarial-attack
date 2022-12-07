@@ -6,7 +6,7 @@ from itertools import chain
 import pandas as pd
 
 from sklearn.preprocessing import MinMaxScaler
-from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import OneHotEncoder
 
 def get_columns_type(df):
     '''

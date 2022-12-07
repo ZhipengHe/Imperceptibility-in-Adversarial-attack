@@ -77,7 +77,7 @@ def train_models(X_train, y_train):
                 tf.keras.layers.Activation(tf.nn.softmax),
             ]
         )
-    nn_2.compile(optimizer="Adam", loss='SparseCategoricalCrossentropy', metrics=['accuracy'])
+    nn_2.compile(optimizer="Adam", loss='sparse_categorical_crossentropy', metrics=['accuracy'])
     nn_2.fit(X_train, y_train, batch_size=64, epochs=20, shuffle=True)
 
     models = {
