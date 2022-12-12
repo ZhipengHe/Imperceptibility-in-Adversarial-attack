@@ -86,3 +86,24 @@ CLASSIFIER_TYPE = Union[  # pylint: disable=C0103
 
 </p>
 </details>
+
+## Current problems in ART
+
+### DeepFool
+
+When the neural network only have one output node, it has the following error:
+
+```
+ValueError: This attack has not yet been tested for binary classification with a single output classifier.
+```
+
+The error is from ([source code](https://github.com/Trusted-AI/adversarial-robustness-toolbox/blob/main/art/attacks/evasion/deepfool.py#L104-L107)):
+
+```python
+if self.estimator.nb_classes == 2 and preds.shape[1] == 1:
+    raise ValueError(  # pragma: no cover
+        "This attack has not yet been tested for binary classification with a single output classifier."
+    )
+```
+
+https://stats.stackexchange.com/questions/207049/neural-network-for-binary-classification-use-1-or-2-output-neurons
