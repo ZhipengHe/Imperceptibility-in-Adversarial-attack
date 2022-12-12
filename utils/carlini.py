@@ -4,42 +4,22 @@ import pandas as pd
 from time import time
 from utils.preprocessing import DfInfo
 from utils.preprocessing import inverse_dummy
+from utils.exceptions import UnsupportedNorm
 
-from art.attacks.evasion import DeepFool
+from art.attacks.evasion import CarliniL0Method, CarliniL2Method, CarliniLInfMethod
 from art.estimators.classification import SklearnClassifier, KerasClassifier
 # from art.estimators.classification.scikitlearn import ScikitlearnDecisionTreeClassifier
 # from art.estimators.classification.scikitlearn import ScikitlearnRandomForestClassifier
 from art.estimators.classification.scikitlearn import ScikitlearnLogisticRegression
 from art.estimators.classification.scikitlearn import ScikitlearnSVC
 
-'''
-Acronym:
-
-dt -> Decision Tree
-rfc -> Random Forest Classifier
-nn -> Nueral Network
-ohe -> One-hot encoding format
-'''
-
-'''
-
-CLASSIFIER_CLASS_LOSS_GRADIENTS_TYPE
-
-art.estimators.classification.SklearnClassifier()
-art.estimators.classification.KerasClassifier(
-    model, # Keras model
-    use_logits, 
-    clip_values, # Tuple of the form (min, max) representing the minimum and maximum values allowed for features
-    )
-
-'''
 
 # Set the desired parameters for the attack
-deepfool_params = {
-    # 'targeted': False,
-    # 'confidence': 0.0, 
-    'max_iter': 1000, 
-    # 'learning_rate': 1e-2, 
+cw_params = {
+    'targeted': False,
+    'confidence': 0.0, 
+    'max_iter': 100, 
+    'learning_rate': 0.01, 
     # 'binary_search_steps': 1, 
     # 'initial_const': 1e-2,
     'batch_size': 64,
@@ -47,10 +27,9 @@ deepfool_params = {
     }
 
 
-
 def art_wrap_models(models, feature_range):
     '''
-    Wrap the model to meet the requirements to art.attacks.evasion.DeepFool
+    Wrap the model to meet the requirements to art.attacks.evasion.CarliniL0Method
     '''
 
     return {
@@ -59,29 +38,37 @@ def art_wrap_models(models, feature_range):
         'nn_2': KerasClassifier(models['nn_2'], clip_values=feature_range),
     }
 
-
-def get_deepfool_instance(wrapped_models):
+def get_carlini_instance(wrapped_models, norm):
     '''
     '''
     adv_instance = {}
 
     for k in wrapped_models.keys():
-        adv_instance[k] = DeepFool(classifier=wrapped_models[k], **deepfool_params)
+
+        if norm == "l_0":
+            adv_instance[k] = CarliniL0Method(classifier=wrapped_models[k], **cw_params)
+        
+        elif norm == "l_2":
+            adv_instance[k] = CarliniL2Method(classifier=wrapped_models[k],**cw_params)
+
+        elif norm == "l_inf":
+            adv_instance[k] = CarliniLInfMethod(classifier=wrapped_models[k],**cw_params)
+        
+        else:
+            raise UnsupportedNorm()
+
     
     return adv_instance
 
 
-def generate_deepfool_result(
+def generate_carlini_result(
         df_info: DfInfo,
         models,
         num_instances,
         X_test, y_test,
+        norm=None,
         models_to_run=['svc', 'lr', 'nn_2'],
 ):
-
-    # Since we use min-max scaler and one-hot encoding, we can contraint the range in [0, 1]
-    # feature_range = (np.zeros((1, len(df_info.feature_names))), 
-    #                  np.ones((1, len(df_info.feature_names))))
     
     feature_range=(0,1)
 
@@ -91,7 +78,7 @@ def generate_deepfool_result(
     wrapped_models = art_wrap_models(models, feature_range)
 
     # Get adversarial examples generator instance.
-    adv_instance = get_deepfool_instance(wrapped_models)
+    adv_instance = get_carlini_instance(wrapped_models, norm=norm)
 
     # Initialise the result dictionary.(It will be the return value.)
     results = {}
@@ -136,9 +123,9 @@ def generate_deepfool_result(
             input_df.loc[0, df_info.target_name] = df_info.target_label_encoder.inverse_transform([prediction[idx]])[0]
 
             results[k].append({
-                "input": instance,
+                "input": example,
                 "input_df": input_df,
-                "adv_example": adv[idx],
+                "adv_example": adv_example,
                 "adv_example_df": adv_example_df,
                 "running_time": running_time,
                 "ground_truth": df_info.target_label_encoder.inverse_transform([y_test[idx]])[0],
@@ -147,7 +134,6 @@ def generate_deepfool_result(
             })
     
     return results
-                
 
 
 def process_result(results, df_info):
