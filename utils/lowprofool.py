@@ -26,7 +26,7 @@ all non-ordered categorical features need to be dropped
 
 # Set the desired parameters for the attack
 lowprofool_params = {
-    'n_steps': 100,
+    'n_steps': 1000,
     'eta': 0.02,
     'verbose': True,
     }

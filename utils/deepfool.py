@@ -36,12 +36,7 @@ art.estimators.classification.KerasClassifier(
 
 # Set the desired parameters for the attack
 deepfool_params = {
-    # 'targeted': False,
-    # 'confidence': 0.0, 
     'max_iter': 1000, 
-    # 'learning_rate': 1e-2, 
-    # 'binary_search_steps': 1, 
-    # 'initial_const': 1e-2,
     'batch_size': 64,
     'verbose': True,
     }
@@ -78,10 +73,6 @@ def generate_deepfool_result(
         X_test, y_test,
         models_to_run=['svc', 'lr', 'nn_2'],
 ):
-
-    # Since we use min-max scaler and one-hot encoding, we can contraint the range in [0, 1]
-    # feature_range = (np.zeros((1, len(df_info.feature_names))), 
-    #                  np.ones((1, len(df_info.feature_names))))
     
     feature_range=(0,1)
 
