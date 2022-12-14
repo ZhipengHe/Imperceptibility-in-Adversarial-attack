@@ -25,9 +25,11 @@ nn -> Nueral Network
 # Set the desired parameters for the attack
 hopskipjump_params = {
     'targeted': False,
-    'max_iter': 1000, 
+    'max_iter': 25, 
     'batch_size': 64,
     'verbose': True,
+    'max_eval': 5000,
+    
     }
 
 def art_wrap_models(models, feature_range):

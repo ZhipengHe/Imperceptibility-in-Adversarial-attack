@@ -18,7 +18,7 @@ from art.estimators.classification.scikitlearn import ScikitlearnSVC
 cw_params = {
     'targeted': False,
     # 'confidence': 0.0, 
-    'max_iter': 1000, 
+    'max_iter': 100, 
     # 'learning_rate': 0.01, 
     # 'binary_search_steps': 1, 
     # 'initial_const': 1e-2,

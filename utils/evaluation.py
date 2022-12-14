@@ -8,26 +8,32 @@ from scipy.spatial import distance
 
 class InstanceType(Enum):
     ScaledInput = "scaled_input_"
-    ScaledCf = "scaled_cf_"
+    ScaledAdv = "scaled_adv_"
     OriginInput = "origin_input_"
-    OriingCf = "origin_cf_"
+    OriginAdv = "origin_adv_"
 
 '''
 Evaluation Functions.
 '''
 
+def get_Linf(**kwargs):
+    input_array = np.array(kwargs['input'])
+    adv_array = np.array(kwargs['adv'])
+
+    return np.linalg.norm(input_array - adv_array, axis=1, ord=np.inf)
+
 def get_L2(**kwargs):
     input_array = np.array(kwargs['input'])
-    cf_array = np.array(kwargs['cf'])
+    adv_array = np.array(kwargs['adv'])
 
-    return np.linalg.norm(input_array - cf_array, axis=1, ord=2)
+    return np.linalg.norm(input_array - adv_array, axis=1, ord=2)
 
 
 def get_L1(**kwargs):
     input_array = np.array(kwargs['input'])
-    cf_array = np.array(kwargs['cf'])
+    adv_array = np.array(kwargs['adv'])
 
-    return np.linalg.norm(input_array - cf_array, axis=1, ord=1)
+    return np.linalg.norm(input_array - adv_array, axis=1, ord=1)
 
 
 def get_sparsity(**kwargs):
@@ -35,30 +41,35 @@ def get_sparsity(**kwargs):
     # should remove the target column first.
     
     input_df = kwargs['not_dummy_input']
-    cf_df = kwargs['not_dummy_cf']
+    adv_df = kwargs['not_dummy_adv']
 
     input_array = np.array(input_df)
-    cf_array = np.array(cf_df)
+    adv_array = np.array(adv_df)
 
-    return (input_array != cf_array).astype(int).sum(axis=1)
+    # return (input_array != adv_array).astype(int).sum(axis=1)
+    return sum(x != y for x, y in zip(input_array, adv_array))
+
+    
+
+
 
 def get_realisitic(**kwargs):
     '''
     Checking if the numerical columns are in the range of [0, 1].
     '''
     df_info: DfInfo = kwargs['df_info']
-    cf_num_array = np.array(kwargs['cf'][df_info.numerical_cols])
-    return np.all(np.logical_and(cf_num_array >= 0, cf_num_array <= 1 ), axis=1)
+    adv_num_array = np.array(kwargs['adv'][df_info.numerical_cols])
+    return np.all(np.logical_and(adv_num_array >= 0, adv_num_array <= 1 ), axis=1)
 
 def get_mad(**kwargs,):
     '''
-    Get Mean Absolute Deviation Distance between input and cf. 
+    Get Mean Absolute Deviation Distance between input and adv. 
     '''
 
     eps = 1e-8
 
     input_df = kwargs['input']
-    cf_df = kwargs['cf']
+    adv_df = kwargs['adv']
     df_info = kwargs['df_info']
 
     ohe_cat_cols = df_info.get_ohe_cat_cols()
@@ -67,9 +78,9 @@ def get_mad(**kwargs,):
     numerical_mads = df_info.get_numerical_mads()
 
     mad_df = pd.DataFrame({}, columns= df_info.ohe_feature_names)
-    mad_df[ohe_cat_cols] = (input_df[ohe_cat_cols] != cf_df[ohe_cat_cols]).astype(int)
+    mad_df[ohe_cat_cols] = (input_df[ohe_cat_cols] != adv_df[ohe_cat_cols]).astype(int)
     for num_col in ohe_num_cols: 
-        mad_df[num_col] = abs(cf_df[num_col] - input_df[num_col]) / (numerical_mads[num_col] + eps)
+        mad_df[num_col] = abs(adv_df[num_col] - input_df[num_col]) / (numerical_mads[num_col] + eps)
 
     if len(ohe_cat_cols) > 0 and len(ohe_num_cols) > 0:
         return (mad_df[ohe_num_cols].mean(axis=1) + mad_df[ohe_cat_cols].mean(axis=1)).tolist()
@@ -88,17 +99,41 @@ def get_mad(**kwargs,):
 
 def get_mahalanobis(**kwargs,):
     '''
-    Get Mahalanobis distance between input and cf.
+    Get Mahalanobis distance between input and adv.
     '''
     input_df = kwargs['input']
-    cf_df = kwargs['cf']
+    adv_df = kwargs['adv']
     df_info = kwargs['df_info']
 
     VI_m = df_info.dummy_df[df_info.ohe_feature_names].cov().to_numpy()
 
     return [distance.mahalanobis(input_df[df_info.ohe_feature_names].iloc[i].to_numpy(),
-                                cf_df[df_info.ohe_feature_names].iloc[i].to_numpy(),
+                                adv_df[df_info.ohe_feature_names].iloc[i].to_numpy(),
                                 VI_m) for i in range(len(input_df))]
+
+
+def get_perturbation_sensitivity(**kwargs,):
+
+    adv_df = kwargs['adv']
+    df_info = kwargs['df_info']
+
+    std = df_info.dummy_df[df_info.ohe_feature_names].std().to_numpy()
+    adv_std = adv_df[df_info.ohe_feature_names].std().to_numpy()
+
+    return (1.0 / adv_std)
+
+
+def get_neighbour_distance(**kwargs,):
+
+    adv_df = kwargs['adv']
+    df_info = kwargs['df_info']
+    
+    adv_arr = adv_df[df_info.ohe_feature_names].to_numpy()
+    dataset = df_info.dummy_df[df_info.ohe_feature_names].to_numpy()
+
+    return distance.cdist(adv_arr, dataset, 'minkowski', p=2).min(axis=1).tolist()
+
+    
 
 class EvaluationMatrix(Enum):
     '''
@@ -106,19 +141,25 @@ class EvaluationMatrix(Enum):
     '''
     L1 = "L1"
     L2 = "L2"
+    Linf = "Linf"
     Sparsity = "Sparsity"
     Realistic = "Realistic"
     MAD = "MAD"
     Mahalanobis = "Mahalanobis"
+    Perturbation_Sensitivity = "Perturbation_Sensitivity"
+    Neighbour_Distance = "Neighbour_Distance"
 
 evaluation_name_to_func = {
     # All evaluation function should be registed here as well
     EvaluationMatrix.L1: get_L1,
     EvaluationMatrix.L2: get_L2,
+    EvaluationMatrix.Linf: get_Linf,
     EvaluationMatrix.Sparsity: get_sparsity,
     EvaluationMatrix.Realistic: get_realisitic,
     EvaluationMatrix.MAD: get_mad,
     EvaluationMatrix.Mahalanobis: get_mahalanobis,
+    EvaluationMatrix.Perturbation_Sensitivity: get_perturbation_sensitivity,
+    EvaluationMatrix.Neighbour_Distance: get_neighbour_distance,
 }
 
 
@@ -180,9 +221,9 @@ def prepare_evaluation_dict(result_df: pd.DataFrame, df_info: DfInfo):
 
     return {
         "input": get_dummy_version(get_type_instance(result_df, InstanceType.ScaledInput), df_info),
-        "cf": get_dummy_version(get_type_instance(result_df, InstanceType.ScaledCf), df_info),
-        "not_dummy_input": get_type_instance(result_df, InstanceType.ScaledInput).drop(df_info.target_name, axis=1),
-        "not_dummy_cf": get_type_instance(result_df, InstanceType.ScaledCf).drop(df_info.target_name, axis=1),
+        "adv": get_dummy_version(get_type_instance(result_df, InstanceType.ScaledAdv), df_info),
+        "not_dummy_input": get_type_instance(result_df, InstanceType.ScaledInput), # .drop(df_info.target_name, axis=1)
+        "not_dummy_adv": get_type_instance(result_df, InstanceType.ScaledAdv), #.drop(df_info.target_name, axis=1)
         "df_info": df_info,
     }
 
@@ -198,18 +239,18 @@ def get_evaluations(result_df: pd.DataFrame, df_info: DfInfo, matrix: List[Evalu
 
     evaluation_df = result_df.copy(deep=True)
 
-    ## Only perform evaluation on the row with found cf.
-    found_idx = evaluation_df[evaluation_df['Found']=="Y"].index
-    cf_found_eaval_df = evaluation_df.loc[found_idx].copy(deep=True)
+    ## Only perform evaluation on the row with found adv.
+    # found_idx = evaluation_df[evaluation_df['Found']=="Y"].index
+    adv_found_eaval_df = evaluation_df.copy(deep=True)
 
-    if len(cf_found_eaval_df) < 1:
-        raise Exception("No counterfactuals found, can't provide any evaluation.")
+    if len(adv_found_eaval_df) < 1:
+        raise Exception("No adversarial example found, can't provide any evaluation.")
 
-    input_and_cf = prepare_evaluation_dict(cf_found_eaval_df, df_info)
+    input_and_adv = prepare_evaluation_dict(adv_found_eaval_df, df_info)
 
     for m in matrix:
-        cf_found_eaval_df[m.value] = evaluation_name_to_func[m](**input_and_cf)
+        adv_found_eaval_df[m.value] = evaluation_name_to_func[m](**input_and_adv)
 
-    evaluation_df.loc[found_idx, cf_found_eaval_df.columns] = cf_found_eaval_df
+    evaluation_df.loc[:, adv_found_eaval_df.columns] = adv_found_eaval_df
 
     return evaluation_df

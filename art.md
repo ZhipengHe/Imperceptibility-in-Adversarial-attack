@@ -15,7 +15,7 @@
 | **C&W Attack**      	| Gradients         	|         :x:        	|         :x:        	| :heavy_check_mark: 	|    :heavy_check_mark:   	|  :heavy_check_mark: 	|
 | **Boundary Attack** 	| Black Box Attack   	| :heavy_check_mark: 	| :heavy_check_mark: 	| :heavy_check_mark: 	|    :heavy_check_mark:   	|  :heavy_check_mark: 	|
 | **HopSkipJump Attack**| Black Box Attack   	| :heavy_check_mark:    | :heavy_check_mark: 	| :heavy_check_mark: 	|    :heavy_check_mark:   	|  :heavy_check_mark: 	|
-| **Sign-OPT Attack**   | Black Box Attack   	| :heavy_check_mark:    | :heavy_check_mark: 	| :heavy_check_mark: 	|    :heavy_check_mark:   	|  :heavy_check_mark: 	|
+<!-- | **Sign-OPT Attack**   | Black Box Attack   	| :heavy_check_mark:    | :heavy_check_mark: 	| :heavy_check_mark: 	|    :heavy_check_mark:   	|  :heavy_check_mark: 	| -->
 
 <details><summary>Classifier types in ART</summary>
 <p>
@@ -195,5 +195,3 @@ In `LowProFool` [L148-L171](https://github.com/Trusted-AI/adversarial-robustness
   )
 ```
 
-
-### 
