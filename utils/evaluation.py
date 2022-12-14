@@ -46,8 +46,8 @@ def get_sparsity(**kwargs):
     input_array = np.array(input_df)
     adv_array = np.array(adv_df)
 
-    # return (input_array != adv_array).astype(int).sum(axis=1)
-    return sum(x != y for x, y in zip(input_array, adv_array))
+    return np.equal(input_array, adv_array).astype(int).sum(axis=1)
+    # return sum(x != y for x, y in zip(input_array, adv_array))
 
     
 
@@ -222,7 +222,7 @@ def prepare_evaluation_dict(result_df: pd.DataFrame, df_info: DfInfo):
     return {
         "input": get_dummy_version(get_type_instance(result_df, InstanceType.ScaledInput), df_info),
         "adv": get_dummy_version(get_type_instance(result_df, InstanceType.ScaledAdv), df_info),
-        "not_dummy_input": get_type_instance(result_df, InstanceType.ScaledInput), # .drop(df_info.target_name, axis=1)
+        "not_dummy_input": get_type_instance(result_df, InstanceType.ScaledInput).drop(labels=df_info.target_name, axis=1), # .drop(df_info.target_name, axis=1)
         "not_dummy_adv": get_type_instance(result_df, InstanceType.ScaledAdv), #.drop(df_info.target_name, axis=1)
         "df_info": df_info,
     }
@@ -248,9 +248,12 @@ def get_evaluations(result_df: pd.DataFrame, df_info: DfInfo, matrix: List[Evalu
 
     input_and_adv = prepare_evaluation_dict(adv_found_eaval_df, df_info)
 
+    metric = {}
     for m in matrix:
-        adv_found_eaval_df[m.value] = evaluation_name_to_func[m](**input_and_adv)
+        adv_metric = evaluation_name_to_func[m](**input_and_adv)
+        adv_found_eaval_df[m.value] = adv_metric
+        metric[m.value]=np.array(adv_metric).mean().astype(np.float32)
 
     evaluation_df.loc[:, adv_found_eaval_df.columns] = adv_found_eaval_df
 
-    return evaluation_df
+    return evaluation_df, metric
