@@ -5,6 +5,7 @@ import numpy as np
 from sklearn.preprocessing import OneHotEncoder, MinMaxScaler
 from tensorflow.keras.models import model_from_json
 from utils.exceptions import UnsupportedDataset
+import os
 
 class SelectableDataset(Enum):
     Diabetes = "Diabetes"
@@ -116,3 +117,27 @@ def load_model( model_name, path ):
     print("Loaded model from disk")
     
     return loaded_model
+
+def load_result_from_csv(alg_name, dataset_name, model):
+
+    path = f'./results/{alg_name}_{dataset_name}'
+    file = f"{path}/{alg_name}_{dataset_name}_{model}_result.csv"
+
+    if os.path.isfile(file):
+        return pd.read_csv(file)
+    else:
+        return None
+
+def load_datapoints_from_npy(alg_name, dataset_name, model, adv: bool):
+
+    path = f"./datapoints/{alg_name}_{dataset_name}"
+    if not adv:
+        file = f"{path}/{alg_name}_{dataset_name}_{model}_arr.npy"
+    else:
+        file = f"{path}/{alg_name}_{dataset_name}_{model}_arr_adv.npy"
+    
+    if os.path.isfile(file):
+        return np.load(file)
+    else: 
+        return None
+
