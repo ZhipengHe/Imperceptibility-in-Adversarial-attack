@@ -181,6 +181,58 @@ def print_eval_states(y_test, y_pred, name=None):
     plt.title(f'Confusion Matrix ({name})', fontsize=18)
     plt.show()
 
+def save_model_performance(models, dataset_name, X_test, y_test):
+
+    # Create empty lists to store the accuracy, precision, recall, and F1 score for each model
+    dataset_names = []
+    model_names = []
+    accuracies = []
+    precisions = []
+    recalls = []
+    f1_scores = []
+
+    # Iterate over the models and compute the accuracy, precision, recall, and F1 score for each one
+    for model, classifier in models.items():
+
+        if model == 'dt':
+            predictions = models['dt'].predict(X_test)
+        if model == 'rfc':
+            predictions = models['rfc'].predict(X_test)
+        if model == 'svc':
+            predictions = models['svc'].predict(X_test)
+        if model == 'lr':
+            predictions = models['lr'].predict(X_test)
+        if model == 'nn':
+            predictions = (models['nn'].predict(X_test) > 0.5).flatten().astype(int)
+        if model == 'nn_2':
+            predictions = models['nn_2'].predict(X_test).argmax(axis=1).flatten().astype(int)
+        
+        # Calculate the accuracy, precision, recall, and F1 score of the model
+        accuracy = accuracy_score(y_test, predictions)
+        precision = precision_score(y_test, predictions)
+        recall = recall_score(y_test, predictions)
+        f1 = f1_score(y_test, predictions)
+        
+        # Append the accuracy, precision, recall, and F1 score to the appropriate lists
+        dataset_names.append(dataset_name)
+        model_names.append(model)
+        accuracies.append(accuracy)
+        precisions.append(precision)
+        recalls.append(recall)
+        f1_scores.append(f1)
+
+    table = {
+            'Dataset Name': dataset_names,
+            'Model Name': model_names,
+            'Accuracy': accuracies,
+            'Precision': precisions,
+            'Recall': recalls,
+            'F1 Score': f1_scores
+        }
+    
+    return table
+
+
 def save_three_models(models, dataset_name, path='./saved_models'):
     '''
     Save three trained models to desired `path`.

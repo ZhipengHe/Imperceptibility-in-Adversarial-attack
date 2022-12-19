@@ -17,9 +17,9 @@ from art.estimators.classification.scikitlearn import ScikitlearnSVC
 # Set the desired parameters for the attack
 cw_params = {
     'targeted': False,
-    'confidence': 0.0, 
+    # 'confidence': 0.0, 
     'max_iter': 100, 
-    'learning_rate': 0.01, 
+    # 'learning_rate': 0.01, 
     # 'binary_search_steps': 1, 
     # 'initial_const': 1e-2,
     'batch_size': 64,
@@ -134,67 +134,3 @@ def generate_carlini_result(
             })
     
     return results
-
-
-def process_result(results, df_info):
-    '''
-    Process the result dictionary to construct data frames for each (lr, svc, nn_2).
-    '''
-
-    results_df = {}
-
-    # Loop through ['dt', 'rfc', 'nn']
-    for k in results.keys():
-
-        all_data = []
-        for i in range(len(results[k])):
-
-            final_df = pd.DataFrame([{}])
-
-            # Inverse the scaling process to get the original data for input.
-            scaled_input_df = results[k][i]['input_df'].copy(deep=True)
-            origin_columns = [
-                f"origin_input_{col}" for col in scaled_input_df.columns]
-            origin_input_df = scaled_input_df.copy(deep=True)
-            scaled_input_df.columns = [
-                f"scaled_input_{col}" for col in scaled_input_df.columns]
-
-            origin_input_df[df_info.numerical_cols] = df_info.scaler.inverse_transform(
-                origin_input_df[df_info.numerical_cols])
-            origin_input_df.columns = origin_columns
-
-            final_df = final_df.join([scaled_input_df, origin_input_df])
-
-            # If counterfactaul found, inverse the scaling process to get the original data for cf.
-            if not results[k][i]['adv_example_df'] is None:
-                scaled_ae_df = results[k][i]['adv_example_df'].copy(deep=True)
-                # Comment this
-                # scaled_cf_df.loc[0, target_name] = target_label_encoder.inverse_transform([scaled_cf_df.loc[0, target_name]])[0]
-                origin_ae_columns = [
-                    f"origin_adv_{col}" for col in scaled_ae_df.columns]
-                origin_ae_df = scaled_ae_df.copy(deep=True)
-                scaled_ae_df.columns = [
-                    f"scaled_adv_{col}" for col in scaled_ae_df.columns]
-
-                origin_ae_df[df_info.numerical_cols] = df_info.scaler.inverse_transform(
-                    origin_ae_df[df_info.numerical_cols])
-                origin_ae_df.columns = origin_ae_columns
-
-                final_df = final_df.join([scaled_ae_df, origin_ae_df])
-
-            # Record additional information.
-            final_df['input_array'] = [results[k][i]['input']]
-            final_df['adv_array'] = [results[k][i]['adv_example']]
-
-            final_df['running_time'] = results[k][i]['running_time']
-            final_df['Predict_Success'] = "Y" if results[k][i]['ground_truth'] == results[k][i]['prediction'] else "N"
-            final_df['Attack_Success?'] = "Y" if not results[k][i]['ground_truth'] == results[k][i]['adv_prediction'] else "N"
-            final_df['ground_truth'] = results[k][i]['ground_truth']
-            final_df['prediction'] = results[k][i]['prediction']
-            final_df['adv_prediction'] = results[k][i]['adv_prediction']
-
-            all_data.append(final_df)
-
-        results_df[k] = pd.concat(all_data)
-
-    return results_df
