@@ -4,7 +4,7 @@ import pandas as pd
 from time import time
 from utils.preprocessing import DfInfo
 from utils.preprocessing import inverse_dummy
-from utils.exceptions import UnsupportedNorm
+from utils.exceptions import UnsupportedNorm, UnspportedNum
 from scipy.stats import pearsonr
 
 from art.attacks.evasion import LowProFool
@@ -26,8 +26,6 @@ all non-ordered categorical features need to be dropped
 
 # Set the desired parameters for the attack
 lowprofool_params = {
-    'n_steps': 1000,
-    'eta': 0.02,
     'verbose': True,
     }
 
@@ -95,8 +93,20 @@ def generate_lowprofool_result(
     # Initialise the result dictionary.(It will be the return value.)
     results = {}
 
-    X_test_re=X_test[0:num_instances]
-    y_test_re=y_test[0:num_instances]
+    if isinstance(num_instances, int) and num_instances % lowprofool_params['batch_size'] == 0:
+
+        X_test_re=X_test[0:num_instances]
+        y_test_re=y_test[0:num_instances]
+    
+    elif isinstance(num_instances, str) and num_instances == 'all':
+        
+        X_test_num = len(X_test) - (len(X_test)%lowprofool_params['batch_size'])
+        X_test_re=X_test[0:X_test_num]
+        y_test_num = len(y_test) - (len(y_test)%lowprofool_params['batch_size'])
+        y_test_re=y_test[0:y_test_num]
+
+    else:
+        raise UnspportedNum()
 
     y_test_re_ohe = np.zeros((y_test_re.size, 2))
     y_test_re_ohe[np.arange(y_test_re.size), y_test_re] = 1

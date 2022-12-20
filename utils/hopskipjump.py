@@ -4,6 +4,7 @@ import pandas as pd
 from time import time
 from utils.preprocessing import DfInfo
 from utils.preprocessing import inverse_dummy
+from utils.exceptions import UnspportedNum
 
 from art.attacks.evasion import HopSkipJump
 from art.estimators.classification import SklearnClassifier, KerasClassifier
@@ -11,7 +12,7 @@ from art.estimators.classification.scikitlearn import ScikitlearnDecisionTreeCla
 from art.estimators.classification.scikitlearn import ScikitlearnRandomForestClassifier
 from art.estimators.classification.scikitlearn import ScikitlearnLogisticRegression
 from art.estimators.classification.scikitlearn import ScikitlearnSVC
-
+from art.estimators.classification.scikitlearn import ScikitlearnGradientBoostingClassifier
 
 '''
 Acronym:
@@ -25,11 +26,8 @@ nn -> Nueral Network
 # Set the desired parameters for the attack
 hopskipjump_params = {
     'targeted': False,
-    'max_iter': 25, 
     'batch_size': 64,
     'verbose': True,
-    'max_eval': 5000,
-    
     }
 
 def art_wrap_models(models, feature_range):
@@ -42,6 +40,7 @@ def art_wrap_models(models, feature_range):
         'rfc': ScikitlearnRandomForestClassifier(models['rfc'], clip_values=feature_range),
         'lr': ScikitlearnLogisticRegression(models['lr'], clip_values=feature_range),
         'svc': ScikitlearnSVC(models['svc'], clip_values=feature_range),
+        'gbc': ScikitlearnGradientBoostingClassifier(models['gbc'], clip_values=feature_range),
         'nn': KerasClassifier(models['nn'], clip_values=feature_range),
         'nn_2': KerasClassifier(models['nn_2'], clip_values=feature_range),
     }
@@ -64,7 +63,7 @@ def generate_hopskipjump_result(
         num_instances,
         X_test, y_test,
         norm,
-        models_to_run=['dt', 'rfc', 'svc', 'lr', 'nn_2'],
+        models_to_run=['dt', 'svc', 'lr', 'gbc', 'nn_2'],
 ):
     
     feature_range=(0,1)
@@ -80,8 +79,20 @@ def generate_hopskipjump_result(
     # Initialise the result dictionary.(It will be the return value.)
     results = {}
 
-    X_test_re=X_test[0:num_instances]
-    y_test_re=y_test[0:num_instances]
+    if isinstance(num_instances, int) and num_instances % hopskipjump_params['batch_size'] == 0:
+
+        X_test_re=X_test[0:num_instances]
+        y_test_re=y_test[0:num_instances]
+    
+    elif isinstance(num_instances, str) and num_instances == 'all':
+        
+        X_test_num = len(X_test) - (len(X_test)%hopskipjump_params['batch_size'])
+        X_test_re=X_test[0:X_test_num]
+        y_test_num = len(y_test) - (len(y_test)%hopskipjump_params['batch_size'])
+        y_test_re=y_test[0:y_test_num]
+
+    else:
+        raise UnspportedNum()
 
     # Loop through every models (svc, lr, nn_2)
     for k in models_to_run:

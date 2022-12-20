@@ -4,7 +4,7 @@ import pandas as pd
 from time import time
 from utils.preprocessing import DfInfo
 from utils.preprocessing import inverse_dummy
-from utils.exceptions import UnsupportedNorm
+from utils.exceptions import UnsupportedNorm, UnspportedNum
 
 from art.attacks.evasion import CarliniL0Method, CarliniL2Method, CarliniLInfMethod
 from art.estimators.classification import SklearnClassifier, KerasClassifier
@@ -17,11 +17,6 @@ from art.estimators.classification.scikitlearn import ScikitlearnSVC
 # Set the desired parameters for the attack
 cw_params = {
     'targeted': False,
-    # 'confidence': 0.0, 
-    'max_iter': 100, 
-    # 'learning_rate': 0.01, 
-    # 'binary_search_steps': 1, 
-    # 'initial_const': 1e-2,
     'batch_size': 64,
     'verbose': True,
     }
@@ -83,8 +78,20 @@ def generate_carlini_result(
     # Initialise the result dictionary.(It will be the return value.)
     results = {}
 
-    X_test_re=X_test[0:num_instances]
-    y_test_re=y_test[0:num_instances]
+    if isinstance(num_instances, int) and num_instances % cw_params['batch_size'] == 0:
+
+        X_test_re=X_test[0:num_instances]
+        y_test_re=y_test[0:num_instances]
+    
+    elif isinstance(num_instances, str) and num_instances == 'all':
+        
+        X_test_num = len(X_test) - (len(X_test)%cw_params['batch_size'])
+        X_test_re=X_test[0:X_test_num]
+        y_test_num = len(y_test) - (len(y_test)%cw_params['batch_size'])
+        y_test_re=y_test[0:y_test_num]
+
+    else:
+        raise UnspportedNum()
 
     # Loop through every models (svc, lr, nn_2)
     for k in models_to_run:

@@ -3,3 +3,6 @@ class UnsupportedDataset(Exception):
 
 class UnsupportedNorm(Exception):
     pass
+
+class UnspportedNum(Exception):
+    pass

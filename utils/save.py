@@ -2,27 +2,36 @@ import os
 import pandas as pd
 import numpy as np
 
-def save_result_as_csv(alg_name, dataset_name, results_df):
+def save_result_as_csv(alg_name, dataset_name, results_df, running_times = None):
     '''
     Save the result dataframe as csv file. It will creat the folder for you and print out the destination. 
     '''
     path = f"./results/{alg_name}_{dataset_name}"
     os.makedirs(path, exist_ok=True)
     for df_k in results_df.keys():
-        results_df[df_k].to_csv(f"{path}/{alg_name}_{dataset_name}_{df_k}_result.csv")
+        if running_times is None:
+            results_df[df_k].to_csv(f"{path}/{alg_name}_{dataset_name}_{df_k}_result.csv")
+        else:
+            results_df[df_k].to_csv(f"{path}/{alg_name}_{dataset_name}_{df_k}_result_{running_times}.csv")
 
     print(f"Result has been saved to {path}")
 
-def save_datapoints_as_npy(alg_name, dataset_name, datapoints):
+def save_datapoints_as_npy(alg_name, dataset_name, datapoints, running_times = None):
 
     path = f"./datapoints/{alg_name}_{dataset_name}"
     os.makedirs(path, exist_ok=True)
     for k in datapoints.keys():
-        # datapoints[k].to_csv
-        with open(f"{path}/{alg_name}_{dataset_name}_{k}_arr.npy", 'wb') as f:
-            np.save(f, datapoints[k]["arr"])
-        with open(f"{path}/{alg_name}_{dataset_name}_{k}_arr_adv.npy", 'wb') as f:
-            np.save(f, datapoints[k]["arr_adv"])
+        if running_times is None:
+            with open(f"{path}/{alg_name}_{dataset_name}_{k}_arr.npy", 'wb') as f:
+                np.save(f, datapoints[k]["arr"])
+            with open(f"{path}/{alg_name}_{dataset_name}_{k}_arr_adv.npy", 'wb') as f:
+                np.save(f, datapoints[k]["arr_adv"])
+        else:
+            with open(f"{path}/{alg_name}_{dataset_name}_{k}_arr_{running_times}.npy", 'wb') as f:
+                np.save(f, datapoints[k]["arr"])
+            with open(f"{path}/{alg_name}_{dataset_name}_{k}_arr_adv_{running_times}.npy", 'wb') as f:
+                np.save(f, datapoints[k]["arr_adv"])
+
     
     print(f"Original data points and adversarial examples have been saved to {path}")
 
