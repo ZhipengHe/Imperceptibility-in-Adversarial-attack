@@ -128,13 +128,13 @@ def load_result_from_csv(alg_name, dataset_name, model):
     else:
         return None
 
-def load_datapoints_from_npy(alg_name, dataset_name, model, adv: bool):
+def load_datapoints_from_npy(alg_name, dataset_name, model, running_times, adv: bool):
 
     path = f"./datapoints/{alg_name}_{dataset_name}"
     if not adv:
-        file = f"{path}/{alg_name}_{dataset_name}_{model}_arr.npy"
+        file = f"{path}/{alg_name}_{dataset_name}_{model}_arr_{running_times}.npy"
     else:
-        file = f"{path}/{alg_name}_{dataset_name}_{model}_arr_adv.npy"
+        file = f"{path}/{alg_name}_{dataset_name}_{model}_arr_adv_{running_times}.npy"
     
     if os.path.isfile(file):
         return np.load(file)

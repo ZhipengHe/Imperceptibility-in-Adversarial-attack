@@ -30,6 +30,7 @@ boundary_params = {
     'targeted': False,
     'batch_size': 64,
     'verbose': True,
+    'min_epsilon': 1e-7, # change min_epsilon for each dataset
     }
 
 def art_wrap_models(models, feature_range):
