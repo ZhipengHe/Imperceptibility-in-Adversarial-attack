@@ -98,6 +98,7 @@ def generate_lowprofool_result(
 
         X_test_re=X_test[0:num_instances]
         y_test_re=y_test[0:num_instances]
+        y_test_re=1-y_test_re
     
     elif isinstance(num_instances, str) and num_instances == 'all':
         
@@ -105,6 +106,7 @@ def generate_lowprofool_result(
         X_test_re=X_test[0:X_test_num]
         y_test_num = len(y_test) - (len(y_test)%BATCH_SIZE)
         y_test_re=y_test[0:y_test_num]
+        y_test_re=1-y_test_re
 
     else:
         raise UnspportedNum()
