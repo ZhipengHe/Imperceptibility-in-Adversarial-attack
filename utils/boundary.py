@@ -30,7 +30,10 @@ boundary_params = {
     'targeted': False,
     'batch_size': 64,
     'verbose': True,
-    'min_epsilon': 1e-7, # change min_epsilon for each dataset
+    # 'min_epsilon': 1e-7, # adult
+    # 'min_epsilon': 2e-7, # german
+    # 'min_epsilon': 1e-7, # compas
+    # 'min_epsilon': 1e-6, # breast_cancer
     }
 
 def art_wrap_models(models, feature_range):

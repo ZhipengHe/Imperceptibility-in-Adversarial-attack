@@ -47,7 +47,7 @@ def get_carlini_instance(wrapped_models, norm):
             adv_instance[k] = CarliniL2Method(classifier=wrapped_models[k],**cw_params)
 
         elif norm == "l_inf":
-            adv_instance[k] = CarliniLInfMethod(classifier=wrapped_models[k],**cw_params)
+            adv_instance[k] = CarliniLInfMethod(classifier=wrapped_models[k], largest_const =100,**cw_params)
         
         else:
             raise UnsupportedNorm()
@@ -101,7 +101,7 @@ def generate_carlini_result(
         print(f"Finding adversarial examples for {k}")
 
         start_t = time()
-        adv = adv_instance[k].generate(X_test_re,y_test_re)
+        adv = adv_instance[k].generate(x=X_test_re)
         end_t = time()
 
         # Calculate the running time.

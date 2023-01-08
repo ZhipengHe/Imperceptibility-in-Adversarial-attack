@@ -130,6 +130,14 @@ def load_result_from_csv(alg_name, dataset_name, model):
 
 def load_datapoints_from_npy(alg_name, dataset_name, model, running_times, adv: bool):
 
+    shape = {
+        'adult': (6464,103),
+        'german': (192,65),
+        'compas': (1408, 23),
+        'diabetes': (128, 8),
+        'breast_cancer': (64,30)
+    }
+
     path = f"./datapoints/{alg_name}_{dataset_name}"
     if not adv:
         file = f"{path}/{alg_name}_{dataset_name}_{model}_arr_{running_times}.npy"
@@ -137,7 +145,7 @@ def load_datapoints_from_npy(alg_name, dataset_name, model, running_times, adv: 
         file = f"{path}/{alg_name}_{dataset_name}_{model}_arr_adv_{running_times}.npy"
     
     if os.path.isfile(file):
-        return np.load(file)
+        return np.load(file).reshape(shape[dataset_name])
     else: 
         return None
 

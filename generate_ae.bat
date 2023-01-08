@@ -6,7 +6,7 @@
 @REM - cmd.exe to be initialized with conda init
 
 @REM Define here the path to your conda installation
-set CONDAPATH=C:\Users\n10599070\Miniconda3
+set CONDAPATH=C:\Users\mithr\anaconda3
 @REM Define here the name of the environment
 set ENVNAME=xai
 
@@ -47,7 +47,7 @@ call %CONDAPATH%\Scripts\activate.bat %ENVPATH%
 
 @REM RUN LowProFool Attack for 10 times
 
-@REM python 2_generate_ae.py --lowprofool True --times 0
+python 2_generate_ae.py --lowprofool True --times 0
 @REM python 2_generate_ae.py --lowprofool True --times 1
 @REM python 2_generate_ae.py --lowprofool True --times 2
 @REM python 2_generate_ae.py --lowprofool True --times 3
@@ -73,16 +73,16 @@ call %CONDAPATH%\Scripts\activate.bat %ENVPATH%
 
 @REM RUN Boundary Attack for 10 times
 
-python 2_generate_ae.py --hopskipjump True --times 0
-python 2_generate_ae.py --hopskipjump True --times 1
-python 2_generate_ae.py --hopskipjump True --times 2
-python 2_generate_ae.py --hopskipjump True --times 3
-python 2_generate_ae.py --hopskipjump True --times 4
-python 2_generate_ae.py --hopskipjump True --times 5
-python 2_generate_ae.py --hopskipjump True --times 6
-python 2_generate_ae.py --hopskipjump True --times 7
-python 2_generate_ae.py --hopskipjump True --times 8
-python 2_generate_ae.py --hopskipjump True --times 9
+@REM python 2_generate_ae.py --hopskipjump True --times 0
+@REM python 2_generate_ae.py --hopskipjump True --times 1
+@REM python 2_generate_ae.py --hopskipjump True --times 2
+@REM python 2_generate_ae.py --hopskipjump True --times 3
+@REM python 2_generate_ae.py --hopskipjump True --times 4
+@REM python 2_generate_ae.py --hopskipjump True --times 5
+@REM python 2_generate_ae.py --hopskipjump True --times 6
+@REM python 2_generate_ae.py --hopskipjump True --times 7
+@REM python 2_generate_ae.py --hopskipjump True --times 8
+@REM python 2_generate_ae.py --hopskipjump True --times 9
 
 @REM Deactivate the environment
 call conda deactivate

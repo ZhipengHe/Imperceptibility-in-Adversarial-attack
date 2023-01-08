@@ -27,6 +27,7 @@ from utils.save import save_result_as_csv, save_datapoints_as_npy, process_resul
 seed = 42
 
 import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 pd.options.mode.chained_assignment = None # suppress "SettingWithCopyWarning" warning
 

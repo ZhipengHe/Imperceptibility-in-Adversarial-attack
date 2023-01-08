@@ -118,9 +118,12 @@ def get_perturbation_sensitivity(**kwargs,):
     adv_df = kwargs['adv']
     df_info = kwargs['df_info']
 
-    std = df_info.dummy_df[df_info.ohe_feature_names].std().to_numpy()
-    adv_std = adv_df[df_info.ohe_feature_names].std().to_numpy()
+    ohe_num_cols = df_info.get_ohe_num_cols()
 
+    # std = adv_df[ohe_num_cols].to_numpy().std()
+    adv_std = adv_df[ohe_num_cols].to_numpy().std()
+
+    # return np.full(shape=adv_df.shape[0], fill_value=(1.0 / adv_std))
     return (1.0 / adv_std)
 
 
@@ -226,7 +229,6 @@ def prepare_evaluation_dict(result_df: pd.DataFrame, df_info: DfInfo):
         "not_dummy_input": get_type_instance(result_df, InstanceType.ScaledInput).drop(labels=df_info.target_name, axis=1), # .drop(df_info.target_name, axis=1)
         "not_dummy_adv": get_type_instance(result_df, InstanceType.ScaledAdv), #.drop(df_info.target_name, axis=1)
         "df_info": df_info,
-        # "groundtruth": get_dummy_version(get_type_instance(result_df, InstanceType.ScaledInput)[df_info.target_name], df_info),
     }
 
 
@@ -241,8 +243,6 @@ def get_evaluations(result_df: pd.DataFrame, df_info: DfInfo, matrix: List[Evalu
 
     evaluation_df = result_df.copy(deep=True)
 
-    ## Only perform evaluation on the row with found adv.
-    # found_idx = evaluation_df[evaluation_df['Found']=="Y"].index
     adv_found_eaval_df = evaluation_df.copy(deep=True)
 
     if len(adv_found_eaval_df) < 1:
@@ -250,19 +250,8 @@ def get_evaluations(result_df: pd.DataFrame, df_info: DfInfo, matrix: List[Evalu
 
     input_and_adv = prepare_evaluation_dict(adv_found_eaval_df, df_info)
 
-    # pred_attack_success, groundtruth_attack_success, original_accuracy, robust_accuracy =  get_attack_success_accuracy(models, model_name, **input_and_adv)
 
     metric = {}
-
-    # adv_found_eaval_df[f'eval_pred_attack_success'] = pred_attack_success
-    # adv_found_eaval_df[f'groundtruth_attack_success'] = groundtruth_attack_success
-    # adv_found_eaval_df[f'original_accuracy'] = original_accuracy
-    # adv_found_eaval_df[f'robust_accuracy'] = robust_accuracy
-
-    # metric[f'eval_pred_attack_success']=np.array(pred_attack_success).mean().astype(np.float32)
-    # metric[f'groundtruth_attack_success']=np.array(groundtruth_attack_success).mean().astype(np.float32)
-    # metric[f'original_accuracy']=np.array(original_accuracy).mean().astype(np.float32)
-    # metric[f'robust_accuracy']=np.array(robust_accuracy).mean().astype(np.float32)
 
     for m in matrix:
         adv_metric = evaluation_name_to_func[m](**input_and_adv)
@@ -274,79 +263,4 @@ def get_evaluations(result_df: pd.DataFrame, df_info: DfInfo, matrix: List[Evalu
     return evaluation_df, metric
 
 
-# def compare_ndarrays(arr1, arr2):
-#     if arr1.shape != arr2.shape:
-#         raise ValueError("Input arrays have different shapes")
-#     return np.where(arr1 == arr2, 0, 1)
 
-# def get_attack_success_accuracy(models, model, **kwargs, ):
-
-#     input_array = np.array(kwargs['input'])
-#     adv_array = np.array(kwargs['adv'])
-#     groundtruth = np.array(kwargs['groundtruth'])
-
-#     if model == 'dt':
-#         predictions = models['dt'].predict(input_array)
-#         adv_predictions = models['dt'].predict(adv_array)
-#     if model == 'rfc':
-#         predictions = models['rfc'].predict(input_array)
-#         adv_predictions = models['rfc'].predict(adv_array)
-#     if model == 'svc':
-#         predictions = models['svc'].predict(input_array)
-#         adv_predictions = models['svc'].predict(adv_array)
-#     if model == 'lr':
-#         predictions = models['lr'].predict(input_array)
-#         adv_predictions = models['lr'].predict(adv_array)
-#     if model == 'gbc':
-#         predictions = models['gbc'].predict(input_array)
-#         adv_predictions = models['gbc'].predict(adv_array)
-#     if model == 'nn':
-#         predictions = (models['nn'].predict(input_array) > 0.5).flatten().astype(int)
-#         adv_predictions = (models['nn'].predict(adv_array) > 0.5).flatten().astype(int)
-#     if model == 'nn_2':
-#         predictions = models['nn_2'].predict(input_array).argmax(axis=1).flatten().astype(int)
-#         adv_predictions = models['nn_2'].predict(adv_array).argmax(axis=1).flatten().astype(int)
-
-#     pred_attack_success = compare_ndarrays(predictions, adv_predictions)
-#     groundtruth_attack_success = compare_ndarrays(groundtruth, adv_predictions)
-#     original_accuracy = accuracy_score(groundtruth, predictions)
-#     robust_accuracy = accuracy_score(groundtruth, adv_predictions)
-
-
-#     return pred_attack_success, groundtruth_attack_success, original_accuracy, robust_accuracy
-
-
-# def get_performance(result_df: pd.DataFrame, df_info: DfInfo, models, model_name):
-#     '''
-#     Perform evaluation on the result dataframe according to the matrix given.
-
-#     [result_df] -> data frame containing input query and its counterfactaul.
-#     [df_info] -> DfInfo instance containing all data information.
-#     [matrix] -> The evaluation matrix to perform on `result_df`.
-#     '''
-
-#     evaluation_df = result_df.copy(deep=True)
-
-#     ## Only perform evaluation on the row with found adv.
-#     # found_idx = evaluation_df[evaluation_df['Found']=="Y"].index
-#     adv_found_eaval_df = evaluation_df.copy(deep=True)
-
-#     if len(adv_found_eaval_df) < 1:
-#         raise Exception("No adversarial example found, can't provide any evaluation.")
-
-#     input_and_adv = prepare_evaluation_dict(adv_found_eaval_df, df_info)
-
-#     pred_attack_success, groundtruth_attack_success, original_accuracy, robust_accuracy =  get_attack_success_accuracy(models, model_name, **input_and_adv)
-
-
-#     # metric = {}
-
-#     adv_found_eaval_df[f'eval_pred_attack_success'] = pred_attack_success
-#     adv_found_eaval_df[f'groundtruth_attack_success'] = groundtruth_attack_success
-#     adv_found_eaval_df[f'original_accuracy'] = original_accuracy
-#     adv_found_eaval_df[f'robust_accuracy'] = robust_accuracy
-#     # metric[m.value]=np.array(adv_metric).mean().astype(np.float32)
-
-#     evaluation_df.loc[:, adv_found_eaval_df.columns] = adv_found_eaval_df
-
-#     return evaluation_df
