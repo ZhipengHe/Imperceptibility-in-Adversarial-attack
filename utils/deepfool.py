@@ -110,7 +110,7 @@ def generate_deepfool_result(
         print(f"Finding adversarial examples for {k}")
 
         start_t = time()
-        adv = adv_instance[k].generate(X_test_re,y_test_re)
+        adv = adv_instance[k].generate(x=X_test_re)
         end_t = time()
 
         # Calculate the running time.

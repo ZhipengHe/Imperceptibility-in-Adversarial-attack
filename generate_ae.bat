@@ -6,7 +6,7 @@
 @REM - cmd.exe to be initialized with conda init
 
 @REM Define here the path to your conda installation
-set CONDAPATH=C:\Users\mithr\anaconda3
+set CONDAPATH=C:\Users\n10599070\Miniconda3
 @REM Define here the name of the environment
 set ENVNAME=xai
 
@@ -21,7 +21,7 @@ call %CONDAPATH%\Scripts\activate.bat %ENVPATH%
 
 @REM RUN DeepFool Attack for 10 times
 
-@REM python 2_generate_ae.py --deepfool True --times 0
+python 2_generate_ae.py --deepfool True --times 0
 @REM python 2_generate_ae.py --deepfool True --times 1
 @REM python 2_generate_ae.py --deepfool True --times 2
 @REM python 2_generate_ae.py --deepfool True --times 3
@@ -34,7 +34,7 @@ call %CONDAPATH%\Scripts\activate.bat %ENVPATH%
 
 @REM RUN Carlini Attack for 10 times
 
-@REM python 2_generate_ae.py --carlini True --times 0
+python 2_generate_ae.py --carlini True --times 0
 @REM python 2_generate_ae.py --carlini True --times 1
 @REM python 2_generate_ae.py --carlini True --times 2
 @REM python 2_generate_ae.py --carlini True --times 3
