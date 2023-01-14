@@ -133,7 +133,7 @@ def load_datapoints_from_npy(alg_name, dataset_name, model, running_times, adv: 
     shape = {
         'adult': (6464,103),
         'german': (192,65),
-        'compas': (1408, 23),
+        'compas': (1408,23),
         'diabetes': (128, 8),
         'breast_cancer': (64,30)
     }

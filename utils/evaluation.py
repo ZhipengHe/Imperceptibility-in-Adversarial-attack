@@ -47,10 +47,9 @@ def get_sparsity(**kwargs):
     input_array = np.array(input_df)
     adv_array = np.array(adv_df)
 
-    return np.equal(input_array, adv_array).astype(int).sum(axis=1)
-    # return sum(x != y for x, y in zip(input_array, adv_array))
+    # return np.equal(input_array, adv_array).astype(int).sum(axis=1)
+    return (input_array != adv_array).astype(int).sum(axis=1)
 
-    
 
 
 
@@ -137,7 +136,8 @@ def get_neighbour_distance(**kwargs,):
 
     return distance.cdist(adv_arr, dataset, 'minkowski', p=2).min(axis=1).tolist()
 
-    
+
+
 
 class EvaluationMatrix(Enum):
     '''
