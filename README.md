@@ -1,4 +1,11 @@
-# Imperceptibility in Adversarial attack
+# Evaluating Imperceptibility of White-Box Adversarial Attacks on Tabular Data
+
+> Submission for IJCAI-23 main track
+
+## Abstract
+
+Adversarial attacks are a potential threat to machine learning models, as they can cause the model to make incorrect predictions by introducing imperceptible perturbations to the input data. Adversarial attacks are extensively explored in the literature for image data but not for tabular data, which is low-dimensional and heterogeneous. In this work, we propose a set of standard metrics for evaluating imperceptibility of adversarial attacks, which encompass three perspectives: adversary perspective, observer perspective and detector perspective. We evaluate the performance and imperceptibility of three white-box adversarial attack methods and their variants using different machine learning models and with a focus on tabular data. As an insightful finding from our evaluation, it is challenging to craft adversarial examples that are both the most effective and least perceptible due to a trade-off between imperceptibility and performance.
+
 
 ## Data Profiling
 
