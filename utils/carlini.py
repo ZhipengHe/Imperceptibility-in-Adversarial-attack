@@ -47,7 +47,7 @@ def get_carlini_instance(wrapped_models, norm):
             adv_instance[k] = CarliniL2Method(classifier=wrapped_models[k],**cw_params)
 
         elif norm == "l_inf":
-            adv_instance[k] = CarliniLInfMethod(classifier=wrapped_models[k], largest_const =100,**cw_params)
+            adv_instance[k] = CarliniLInfMethod(classifier=wrapped_models[k],**cw_params)
         
         else:
             raise UnsupportedNorm()

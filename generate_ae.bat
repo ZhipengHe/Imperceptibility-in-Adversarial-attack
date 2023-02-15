@@ -21,7 +21,7 @@ call %CONDAPATH%\Scripts\activate.bat %ENVPATH%
 
 @REM RUN DeepFool Attack for 10 times
 
-python 2_generate_ae.py --deepfool True --times 0
+@REM python 2_generate_ae.py --deepfool True --times 0
 @REM python 2_generate_ae.py --deepfool True --times 1
 @REM python 2_generate_ae.py --deepfool True --times 2
 @REM python 2_generate_ae.py --deepfool True --times 3
@@ -34,7 +34,7 @@ python 2_generate_ae.py --deepfool True --times 0
 
 @REM RUN Carlini Attack for 10 times
 
-python 2_generate_ae.py --carlini True --times 0
+@REM python 2_generate_ae.py --carlini True --times 0
 @REM python 2_generate_ae.py --carlini True --times 1
 @REM python 2_generate_ae.py --carlini True --times 2
 @REM python 2_generate_ae.py --carlini True --times 3
@@ -47,7 +47,7 @@ python 2_generate_ae.py --carlini True --times 0
 
 @REM RUN LowProFool Attack for 10 times
 
-python 2_generate_ae.py --lowprofool True --times 0
+@REM python 2_generate_ae.py --lowprofool True --times 0
 @REM python 2_generate_ae.py --lowprofool True --times 1
 @REM python 2_generate_ae.py --lowprofool True --times 2
 @REM python 2_generate_ae.py --lowprofool True --times 3
@@ -57,6 +57,32 @@ python 2_generate_ae.py --lowprofool True --times 0
 @REM python 2_generate_ae.py --lowprofool True --times 7
 @REM python 2_generate_ae.py --lowprofool True --times 8
 @REM python 2_generate_ae.py --lowprofool True --times 9
+
+@REM RUN FGSM Attack for 10 times
+
+@REM python 2_generate_ae.py --fgsm True --times 0
+@REM python 2_generate_ae.py --fgsm True --times 1
+@REM python 2_generate_ae.py --fgsm True --times 2
+@REM python 2_generate_ae.py --fgsm True --times 3
+@REM python 2_generate_ae.py --fgsm True --times 4
+@REM python 2_generate_ae.py --fgsm True --times 5
+@REM python 2_generate_ae.py --fgsm True --times 6
+@REM python 2_generate_ae.py --fgsm True --times 7
+@REM python 2_generate_ae.py --fgsm True --times 8
+@REM python 2_generate_ae.py --fgsm True --times 9
+
+@REM RUN FGSM Attack for 10 times
+
+python 2_generate_ae.py --bim True --times 0
+@REM python 2_generate_ae.py --bim True --times 1
+@REM python 2_generate_ae.py --bim True --times 2
+@REM python 2_generate_ae.py --bim True --times 3
+@REM python 2_generate_ae.py --bim True --times 4
+@REM python 2_generate_ae.py --bim True --times 5
+@REM python 2_generate_ae.py --bim True --times 6
+@REM python 2_generate_ae.py --bim True --times 7
+@REM python 2_generate_ae.py --bim True --times 8
+@REM python 2_generate_ae.py --bim True --times 9
 
 @REM RUN Boundary Attack for 10 times
 

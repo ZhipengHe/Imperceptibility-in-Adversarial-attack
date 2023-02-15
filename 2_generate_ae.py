@@ -18,6 +18,8 @@ from utils.exceptions import maybe_str_or_int, str2bool
 import utils.deepfool as util_deepfool
 import utils.carlini as util_carlini
 import utils.lowprofool as util_lowprofool
+import utils.fgsm as util_fgsm
+import utils.bim as util_bim
 import utils.boundary as util_boundary
 import utils.hopskipjump as util_hopskipjump
 
@@ -60,6 +62,14 @@ parser.add_argument('-l', '--lowprofool',
         type=str2bool, default='False',
         help='Run LowProFool attack or not')
 
+parser.add_argument('-f', '--fgsm', 
+        type=str2bool, default='False',
+        help='Run FGSM attack or not')
+
+parser.add_argument('-bi', '--bim', 
+        type=str2bool, default='False',
+        help='Run BIM attack or not')
+
 parser.add_argument('-b', '--boundary',
         type=str2bool, default='False',
         help='Run Boundary attack or not')
@@ -84,6 +94,12 @@ RUN_CARLINI = args.carlini
 RUN_LOWPROFOOL = args.lowprofool
 RUN_BOUNDARY = args.boundary
 RUN_HOPSKIPJUMP = args.hopskipjump
+RUN_FGSM = args.fgsm
+RUN_BIM = args.bim
+
+models_list_original = ["lr","svc","nn_2"]
+# models_list_extended = ["lr","svc","nn_2"]
+
 
 
 def run_experiment(data_type_mixed: bool, running_times: int):
@@ -198,8 +214,6 @@ def run_experiment(data_type_mixed: bool, running_times: int):
                     df_info,
                     models,
                     num_instances,
-                    X_train,
-                    y_train,
                     X_test,
                     y_test,
                     norm='inf', #[int, float, 'inf']
@@ -209,6 +223,68 @@ def run_experiment(data_type_mixed: bool, running_times: int):
             save_datapoints_as_npy("lowprofool_l_inf", dataset_name, lowprofool_l_inf_datapoints, running_times)
             lowprofool_l_inf_result_dfs = process_result(lowprofool_l_inf_results, df_info)
             save_result_as_csv("lowprofool_l_inf", dataset_name, lowprofool_l_inf_result_dfs, running_times)
+
+        if RUN_FGSM:
+
+            fgsm_l_1_results = util_fgsm.generate_fgsm_result(
+                    df_info,
+                    models,
+                    num_instances,
+                    X_test,
+                    y_test,
+                    norm=1, #[int, float, 'inf']
+                    models_to_run=["lr","svc","nn_2"],
+                )
+            fgsm_l_1_datapoints = process_datapoints(fgsm_l_1_results)
+            save_datapoints_as_npy("fgsm_l_1", dataset_name, fgsm_l_1_datapoints, running_times)
+            fgsm_l_1_result_dfs = process_result(fgsm_l_1_results, df_info)
+            save_result_as_csv("fgsm_l_1", dataset_name, fgsm_l_1_result_dfs, running_times)
+
+            fgsm_l_2_results = util_fgsm.generate_fgsm_result(
+                    df_info,
+                    models,
+                    num_instances,
+                    X_test,
+                    y_test,
+                    norm=2, #[int, float, 'inf']
+                    models_to_run=["lr","svc","nn_2"],
+                )
+            fgsm_l_2_datapoints = process_datapoints(fgsm_l_2_results)
+            save_datapoints_as_npy("fgsm_l_2", dataset_name, fgsm_l_2_datapoints, running_times)
+            fgsm_l_2_result_dfs = process_result(fgsm_l_2_results, df_info)
+            save_result_as_csv("fgsm_l_2", dataset_name, fgsm_l_2_result_dfs, running_times)
+
+            fgsm_l_inf_results = util_fgsm.generate_fgsm_result(
+                    df_info,
+                    models,
+                    num_instances,
+                    X_test,
+                    y_test,
+                    norm='inf', #[int, float, 'inf']
+                    models_to_run=["lr","svc","nn_2"],
+                )
+            fgsm_l_inf_datapoints = process_datapoints(fgsm_l_inf_results)
+            save_datapoints_as_npy("fgsm_l_inf", dataset_name, fgsm_l_inf_datapoints, running_times)
+            fgsm_l_inf_result_dfs = process_result(fgsm_l_inf_results, df_info)
+            save_result_as_csv("fgsm_l_inf", dataset_name, fgsm_l_inf_result_dfs, running_times)
+
+        
+        if RUN_BIM:
+
+            bim_results = util_bim.generate_bim_result(
+                    df_info,
+                    models,
+                    num_instances,
+                    X_test,
+                    y_test,
+                    models_to_run=["lr","svc","nn_2"],
+                )
+            bim_datapoints = process_datapoints(bim_results)
+            save_datapoints_as_npy("bim", dataset_name, bim_datapoints, running_times)
+            bim_result_dfs = process_result(bim_results, df_info)
+            save_result_as_csv("bim", dataset_name, bim_result_dfs, running_times)
+
+        # Black Box attack
         
         if RUN_BOUNDARY:
             boundary_results = util_boundary.generate_boundary_result(
@@ -233,7 +309,7 @@ def run_experiment(data_type_mixed: bool, running_times: int):
                     X_test,
                     y_test,
                     norm=2,
-                    models_to_run=["dt","lr","svc","gbc","nn_2"], # "dt","rfc","lr","svc","gbc","nn_2"
+                    models_to_run=["dt","lr","svc","gbc","nn_2"],
             )
             hopskipjump_l_2_datapoints = process_datapoints(hopskipjump_l_2_results)
             save_datapoints_as_npy("hopskipjump_l_2", dataset_name, hopskipjump_l_2_datapoints, running_times)
@@ -248,7 +324,7 @@ def run_experiment(data_type_mixed: bool, running_times: int):
                     X_test,
                     y_test,
                     norm="inf",
-                    models_to_run=["dt","lr","svc","gbc","nn_2"], # "dt","rfc","lr","svc","gbc","nn_2"
+                    models_to_run=["dt","lr","svc","gbc","nn_2"],
             )
             hopskipjump_l_inf_datapoints = process_datapoints(hopskipjump_l_inf_results)
             save_datapoints_as_npy("hopskipjump_l_inf", dataset_name, hopskipjump_l_inf_datapoints, running_times)
