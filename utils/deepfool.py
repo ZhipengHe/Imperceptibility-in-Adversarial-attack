@@ -4,6 +4,7 @@ import pandas as pd
 from time import time
 from utils.preprocessing import DfInfo
 from utils.preprocessing import inverse_dummy
+from utils.exceptions import UnspportedNum
 
 from art.attacks.evasion import DeepFool
 from art.estimators.classification import SklearnClassifier, KerasClassifier
@@ -36,7 +37,6 @@ art.estimators.classification.KerasClassifier(
 
 # Set the desired parameters for the attack
 deepfool_params = {
-    'max_iter': 1000, 
     'batch_size': 64,
     'verbose': True,
     }
@@ -87,8 +87,20 @@ def generate_deepfool_result(
     # Initialise the result dictionary.(It will be the return value.)
     results = {}
 
-    X_test_re=X_test[0:num_instances]
-    y_test_re=y_test[0:num_instances]
+    if isinstance(num_instances, int) and num_instances % deepfool_params['batch_size'] == 0:
+
+        X_test_re=X_test[0:num_instances]
+        y_test_re=y_test[0:num_instances]
+    
+    elif isinstance(num_instances, str) and num_instances == 'all':
+        
+        X_test_num = len(X_test) - (len(X_test)%deepfool_params['batch_size'])
+        X_test_re=X_test[0:X_test_num]
+        y_test_num = len(y_test) - (len(y_test)%deepfool_params['batch_size'])
+        y_test_re=y_test[0:y_test_num]
+
+    else:
+        raise UnspportedNum()
 
     # Loop through every models (svc, lr, nn_2)
     for k in models_to_run:
@@ -98,7 +110,7 @@ def generate_deepfool_result(
         print(f"Finding adversarial examples for {k}")
 
         start_t = time()
-        adv = adv_instance[k].generate(X_test_re,y_test_re)
+        adv = adv_instance[k].generate(x=X_test_re)
         end_t = time()
 
         # Calculate the running time.

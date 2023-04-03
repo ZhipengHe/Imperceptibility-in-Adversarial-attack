@@ -4,7 +4,7 @@ import pandas as pd
 from time import time
 from utils.preprocessing import DfInfo
 from utils.preprocessing import inverse_dummy
-from utils.exceptions import UnsupportedNorm
+from utils.exceptions import UnsupportedNorm, UnspportedNum
 from scipy.stats import pearsonr
 
 from art.attacks.evasion import LowProFool
@@ -26,10 +26,9 @@ all non-ordered categorical features need to be dropped
 
 # Set the desired parameters for the attack
 lowprofool_params = {
-    'n_steps': 1000,
-    'eta': 0.02,
     'verbose': True,
     }
+BATCH_SIZE = 64
 
 
 def art_wrap_models(models, feature_range):
@@ -95,11 +94,24 @@ def generate_lowprofool_result(
     # Initialise the result dictionary.(It will be the return value.)
     results = {}
 
-    X_test_re=X_test[0:num_instances]
-    y_test_re=y_test[0:num_instances]
+    if isinstance(num_instances, int) and num_instances % BATCH_SIZE == 0:
 
-    y_test_re_ohe = np.zeros((y_test_re.size, 2))
-    y_test_re_ohe[np.arange(y_test_re.size), y_test_re] = 1
+        X_test_re=X_test[0:num_instances]
+        y_test_re=y_test[0:num_instances]
+
+    
+    elif isinstance(num_instances, str) and num_instances == 'all':
+        
+        X_test_num = len(X_test) - (len(X_test)%BATCH_SIZE)
+        X_test_re=X_test[0:X_test_num]
+        y_test_num = len(y_test) - (len(y_test)%BATCH_SIZE)
+        y_test_re=y_test[0:y_test_num]
+
+    else:
+        raise UnspportedNum()
+
+    # y_test_re_ohe = np.zeros((y_test_re.size, 2))
+    # y_test_re_ohe[np.arange(y_test_re.size), y_test_re] = 1
 
     # Loop through every models (svc, lr, nn_2)
     for k in models_to_run:
@@ -110,8 +122,19 @@ def generate_lowprofool_result(
 
         adv_instance[k].fit_importances(x=X_train, y=y_train)
 
+        # Get the prediction from original predictive model in a human-understandable format.
+        if k == 'nn_2':
+            prediction = np.argmax(models[k].predict(X_test_re), axis=1).astype(int) 
+        else:
+            prediction = models[k].predict(X_test_re)
+
+        target = 1-prediction
+        target_ohe = np.zeros((target.size, 2))
+        target_ohe[np.arange(target.size), target] = 1
+        
+
         start_t = time()
-        adv = adv_instance[k].generate(X_test_re, y_test_re_ohe) # , y_test_re_ohe
+        adv = adv_instance[k].generate(X_test_re, target_ohe) 
         end_t = time()
 
         # Calculate the running time.
