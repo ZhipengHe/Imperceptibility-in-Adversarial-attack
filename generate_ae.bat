@@ -71,9 +71,9 @@ call %CONDAPATH%\Scripts\activate.bat %ENVPATH%
 @REM python 2_generate_ae.py --fgsm True --times 8
 @REM python 2_generate_ae.py --fgsm True --times 9
 
-@REM RUN FGSM Attack for 10 times
+@REM RUN BIM Attack for 10 times
 
-python 2_generate_ae.py --bim True --times 0
+@REM python 2_generate_ae.py --bim True --times 0
 @REM python 2_generate_ae.py --bim True --times 1
 @REM python 2_generate_ae.py --bim True --times 2
 @REM python 2_generate_ae.py --bim True --times 3
@@ -83,6 +83,33 @@ python 2_generate_ae.py --bim True --times 0
 @REM python 2_generate_ae.py --bim True --times 7
 @REM python 2_generate_ae.py --bim True --times 8
 @REM python 2_generate_ae.py --bim True --times 9
+
+@REM RUN MIM Attack for 10 times
+
+@REM python 2_generate_ae.py --mim True --times 0
+@REM python 2_generate_ae.py --mim True --times 1
+@REM python 2_generate_ae.py --mim True --times 2
+@REM python 2_generate_ae.py --mim True --times 3
+@REM python 2_generate_ae.py --mim True --times 4
+@REM python 2_generate_ae.py --mim True --times 5
+@REM python 2_generate_ae.py --mim True --times 6
+@REM python 2_generate_ae.py --mim True --times 7
+@REM python 2_generate_ae.py --mim True --times 8
+@REM python 2_generate_ae.py --mim True --times 9
+
+@REM RUN PGD Attack for 10 times
+
+python 2_generate_ae.py --pgd True --times 0
+@REM python 2_generate_ae.py --pgd True --times 1
+@REM python 2_generate_ae.py --pgd True --times 2
+@REM python 2_generate_ae.py --pgd True --times 3
+@REM python 2_generate_ae.py --pgd True --times 4
+@REM python 2_generate_ae.py --pgd True --times 5
+@REM python 2_generate_ae.py --pgd True --times 6
+@REM python 2_generate_ae.py --pgd True --times 7
+@REM python 2_generate_ae.py --pgd True --times 8
+@REM python 2_generate_ae.py --pgd True --times 9
+
 
 @REM RUN Boundary Attack for 10 times
 

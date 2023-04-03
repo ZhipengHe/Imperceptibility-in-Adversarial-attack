@@ -20,6 +20,8 @@ import utils.carlini as util_carlini
 import utils.lowprofool as util_lowprofool
 import utils.fgsm as util_fgsm
 import utils.bim as util_bim
+import utils.mim as util_mim
+import utils.pgd as util_pgd
 import utils.boundary as util_boundary
 import utils.hopskipjump as util_hopskipjump
 
@@ -70,6 +72,14 @@ parser.add_argument('-bi', '--bim',
         type=str2bool, default='False',
         help='Run BIM attack or not')
 
+parser.add_argument('-m', '--mim', 
+        type=str2bool, default='False',
+        help='Run MIM attack or not')
+
+parser.add_argument('-p', '--pgd', 
+        type=str2bool, default='False',
+        help='Run PGD attack or not')
+
 parser.add_argument('-b', '--boundary',
         type=str2bool, default='False',
         help='Run Boundary attack or not')
@@ -96,6 +106,8 @@ RUN_BOUNDARY = args.boundary
 RUN_HOPSKIPJUMP = args.hopskipjump
 RUN_FGSM = args.fgsm
 RUN_BIM = args.bim
+RUN_MIM = args.mim
+RUN_PGD = args.pgd
 
 models_list_original = ["lr","svc","nn_2"]
 # models_list_extended = ["lr","svc","nn_2"]
@@ -283,6 +295,67 @@ def run_experiment(data_type_mixed: bool, running_times: int):
             save_datapoints_as_npy("bim", dataset_name, bim_datapoints, running_times)
             bim_result_dfs = process_result(bim_results, df_info)
             save_result_as_csv("bim", dataset_name, bim_result_dfs, running_times)
+
+        
+        if RUN_MIM:
+
+            mim_results = util_mim.generate_mim_result(
+                    df_info,
+                    models,
+                    num_instances,
+                    X_test,
+                    y_test,
+                    models_to_run=["lr","svc","nn_2"],
+                )
+            mim_datapoints = process_datapoints(mim_results)
+            save_datapoints_as_npy("mim", dataset_name, mim_datapoints, running_times)
+            mim_result_dfs = process_result(mim_results, df_info)
+            save_result_as_csv("mim", dataset_name, mim_result_dfs, running_times)
+
+        if RUN_PGD:
+
+            pgd_l_1_results = util_pgd.generate_pgd_result(
+                    df_info,
+                    models,
+                    num_instances,
+                    X_test,
+                    y_test,
+                    norm=1, #[int, float, 'inf']
+                    models_to_run=["lr","svc","nn_2"],
+                )
+            pgd_l_1_datapoints = process_datapoints(pgd_l_1_results)
+            save_datapoints_as_npy("pgd_l_1", dataset_name, pgd_l_1_datapoints, running_times)
+            pgd_l_1_result_dfs = process_result(pgd_l_1_results, df_info)
+            save_result_as_csv("pgd_l_1", dataset_name, pgd_l_1_result_dfs, running_times)
+
+            pgd_l_2_results = util_pgd.generate_pgd_result(
+                    df_info,
+                    models,
+                    num_instances,
+                    X_test,
+                    y_test,
+                    norm=2, #[int, float, 'inf']
+                    models_to_run=["lr","svc","nn_2"],
+                )
+            pgd_l_2_datapoints = process_datapoints(pgd_l_2_results)
+            save_datapoints_as_npy("pgd_l_2", dataset_name, pgd_l_2_datapoints, running_times)
+            pgd_l_2_result_dfs = process_result(pgd_l_2_results, df_info)
+            save_result_as_csv("pgd_l_2", dataset_name, pgd_l_2_result_dfs, running_times)
+
+            pgd_l_inf_results = util_pgd.generate_pgd_result(
+                    df_info,
+                    models,
+                    num_instances,
+                    X_test,
+                    y_test,
+                    norm='inf', #[int, float, 'inf']
+                    models_to_run=["lr","svc","nn_2"],
+                )
+            pgd_l_inf_datapoints = process_datapoints(pgd_l_inf_results)
+            save_datapoints_as_npy("pgd_l_inf", dataset_name, pgd_l_inf_datapoints, running_times)
+            pgd_l_inf_result_dfs = process_result(pgd_l_inf_results, df_info)
+            save_result_as_csv("pgd_l_inf", dataset_name, pgd_l_inf_result_dfs, running_times)
+
 
         # Black Box attack
         
