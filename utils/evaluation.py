@@ -61,9 +61,9 @@ def get_realisitic(**kwargs):
     adv_num_array = np.array(kwargs['adv'][df_info.numerical_cols])
     return np.all(np.logical_and(adv_num_array >= 0, adv_num_array <= 1 ), axis=1)
 
-def get_mad(**kwargs,):
+def get_sensitivity(**kwargs,):
     '''
-    Get Mean Absolute Deviation Distance between input and adv. 
+    Get Sensitivity between input and adv. 
     '''
 
     eps = 1e-8
@@ -75,26 +75,22 @@ def get_mad(**kwargs,):
     ohe_cat_cols = df_info.get_ohe_cat_cols()
     ohe_num_cols = df_info.get_ohe_num_cols()
 
-    numerical_mads = df_info.get_numerical_mads()
+    numerical_stds = df_info.get_numerical_stds()
 
-    mad_df = pd.DataFrame({}, columns= df_info.ohe_feature_names)
-    mad_df[ohe_cat_cols] = (input_df[ohe_cat_cols] != adv_df[ohe_cat_cols]).astype(int)
+    sen_df = pd.DataFrame({}, columns= df_info.ohe_feature_names)
+    sen_df[ohe_cat_cols] = (input_df[ohe_cat_cols] != adv_df[ohe_cat_cols]).astype(int)
     for num_col in ohe_num_cols: 
-        mad_df[num_col] = abs(adv_df[num_col] - input_df[num_col]) / (numerical_mads[num_col] + eps)
+        sen_df[num_col] = abs(adv_df[num_col] - input_df[num_col]) / (numerical_stds[num_col] + eps)
 
     if len(ohe_cat_cols) > 0 and len(ohe_num_cols) > 0:
-        return (mad_df[ohe_num_cols].mean(axis=1) + mad_df[ohe_cat_cols].mean(axis=1)).tolist()
-        # return mad_df.mean(axis=1).tolist()
-        # return mad_df.sum(axis=1).tolist() # <=(weird, may be wrong) actually from (https://github.com/ADMAntwerp/CounterfactualBenchmark/blob/9dbf6a9e604ce1a2a0ddfb15025718f2e0effb0a/frameworks/LORE/distance_functions.py) 
-
+        return (sen_df[ohe_num_cols].mean(axis=1) + sen_df[ohe_cat_cols].mean(axis=1)).tolist()
     elif len(ohe_num_cols) > 0:
-        return mad_df[ohe_num_cols].mean(axis=1).tolist()
+        return sen_df[ohe_num_cols].mean(axis=1).tolist()
     elif len(ohe_cat_cols) > 0:
-        return mad_df[ohe_cat_cols].mean(axis=1).tolist()
+        return sen_df[ohe_cat_cols].mean(axis=1).tolist()
     else:
         raise Exception("No columns provided for MAD.")
 
-    # return (mad_df[ohe_num_cols].mean(axis=1) + mad_df[ohe_cat_cols].mean(axis=1)).tolist()
 
 
 def get_mahalanobis(**kwargs,):
@@ -110,20 +106,6 @@ def get_mahalanobis(**kwargs,):
     return [distance.mahalanobis(input_df[df_info.ohe_feature_names].iloc[i].to_numpy(),
                                 adv_df[df_info.ohe_feature_names].iloc[i].to_numpy(),
                                 VI_m) for i in range(len(input_df))]
-
-
-def get_perturbation_sensitivity(**kwargs,):
-
-    adv_df = kwargs['adv']
-    df_info = kwargs['df_info']
-
-    ohe_num_cols = df_info.get_ohe_num_cols()
-
-    # std = adv_df[ohe_num_cols].to_numpy().std()
-    adv_std = adv_df[ohe_num_cols].to_numpy().std()
-
-    # return np.full(shape=adv_df.shape[0], fill_value=(1.0 / adv_std))
-    return (1.0 / adv_std)
 
 
 def get_neighbour_distance(**kwargs,):
@@ -148,10 +130,10 @@ class EvaluationMatrix(Enum):
     Linf = "eval_Linf"
     Sparsity = "eval_Sparsity"
     Realistic = "eval_Realistic"
-    MAD = "eval_MAD"
+    Sen = "eval_Sen"
     Mahalanobis = "eval_Mahalanobis"
-    Perturbation_Sensitivity = "eval_Perturbation_Sensitivity"
-    Neighbour_Distance = "eval_Neighbour_Distance"
+    # Perturbation_Sensitivity = "eval_Perturbation_Sensitivity"
+    # Neighbour_Distance = "eval_Neighbour_Distance"
 
 evaluation_name_to_func = {
     # All evaluation function should be registed here as well
@@ -160,10 +142,10 @@ evaluation_name_to_func = {
     EvaluationMatrix.Linf: get_Linf,
     EvaluationMatrix.Sparsity: get_sparsity,
     EvaluationMatrix.Realistic: get_realisitic,
-    EvaluationMatrix.MAD: get_mad,
+    EvaluationMatrix.Sen: get_sensitivity,
     EvaluationMatrix.Mahalanobis: get_mahalanobis,
-    EvaluationMatrix.Perturbation_Sensitivity: get_perturbation_sensitivity,
-    EvaluationMatrix.Neighbour_Distance: get_neighbour_distance,
+    # EvaluationMatrix.Perturbation_Sensitivity: get_perturbation_sensitivity,
+    # EvaluationMatrix.Neighbour_Distance: get_neighbour_distance,
 }
 
 

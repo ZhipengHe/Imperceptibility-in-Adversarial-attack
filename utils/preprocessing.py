@@ -225,7 +225,8 @@ class DfInfo:
     def get_numerical_mads(self,):
         return self.scaled_df[self.numerical_cols].mad().to_dict()
 
-
+    def get_numerical_stds(self,):
+        return self.scaled_df[self.numerical_cols].std().to_dict()
 
 
 
