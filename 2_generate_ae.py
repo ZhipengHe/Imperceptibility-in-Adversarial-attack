@@ -80,14 +80,6 @@ parser.add_argument('-p', '--pgd',
         type=str2bool, default='False',
         help='Run PGD attack or not')
 
-parser.add_argument('-b', '--boundary',
-        type=str2bool, default='False',
-        help='Run Boundary attack or not')
-
-parser.add_argument('-ho', '--hopskipjump',
-        type=str2bool, default='False',
-        help='Run HopSkipJump attack or not')
-
 parser.add_argument('-t', '--times',
         type=int, required=True, 
         help='Running times')
@@ -355,55 +347,6 @@ def run_experiment(data_type_mixed: bool, running_times: int):
             save_datapoints_as_npy("pgd_l_inf", dataset_name, pgd_l_inf_datapoints, running_times)
             pgd_l_inf_result_dfs = process_result(pgd_l_inf_results, df_info)
             save_result_as_csv("pgd_l_inf", dataset_name, pgd_l_inf_result_dfs, running_times)
-
-
-        # Black Box attack
-        
-        if RUN_BOUNDARY:
-            boundary_results = util_boundary.generate_boundary_result(
-                    df_info,
-                    models,
-                    num_instances,
-                    X_test,
-                    y_test,
-                    models_to_run=["dt","gbc","lr","svc","nn_2"], # 
-                )
-            boundary_datapoints = process_datapoints(boundary_results)
-            save_datapoints_as_npy("boundary", dataset_name, boundary_datapoints, running_times)
-            boundary_result_dfs = process_result(boundary_results, df_info)
-            save_result_as_csv("boundary", dataset_name, boundary_result_dfs, running_times)
-        
-        if RUN_HOPSKIPJUMP:
-
-            hopskipjump_l_2_results = util_hopskipjump.generate_hopskipjump_result(
-                    df_info,
-                    models,
-                    num_instances,
-                    X_test,
-                    y_test,
-                    norm=2,
-                    models_to_run=["dt","lr","svc","gbc","nn_2"],
-            )
-            hopskipjump_l_2_datapoints = process_datapoints(hopskipjump_l_2_results)
-            save_datapoints_as_npy("hopskipjump_l_2", dataset_name, hopskipjump_l_2_datapoints, running_times)
-            hopskipjump_l_2_result_dfs = process_result(hopskipjump_l_2_results, df_info)
-            save_result_as_csv("hopskipjump_l_2", dataset_name, hopskipjump_l_2_result_dfs, running_times)
-
-
-            hopskipjump_l_inf_results = util_hopskipjump.generate_hopskipjump_result(
-                    df_info,
-                    models,
-                    num_instances,
-                    X_test,
-                    y_test,
-                    norm="inf",
-                    models_to_run=["dt","lr","svc","gbc","nn_2"],
-            )
-            hopskipjump_l_inf_datapoints = process_datapoints(hopskipjump_l_inf_results)
-            save_datapoints_as_npy("hopskipjump_l_inf", dataset_name, hopskipjump_l_inf_datapoints, running_times)
-            hopskipjump_l_inf_result_dfs = process_result(hopskipjump_l_inf_results, df_info)
-            save_result_as_csv("hopskipjump_l_inf", dataset_name, hopskipjump_l_inf_result_dfs, running_times)
-
 
 
 print_block("Experiment " + str(running_times))
