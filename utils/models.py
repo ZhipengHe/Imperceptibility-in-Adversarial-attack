@@ -6,7 +6,7 @@ import numpy as np
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.linear_model import LogisticRegression
-from sklearn.svm import LinearSVC
+from sklearn.svm import SVC
 from sklearn.metrics import recall_score, precision_score, accuracy_score, f1_score, confusion_matrix
 import matplotlib.pyplot as plt
 
@@ -56,7 +56,7 @@ def train_models(X_train, y_train):
     models = {
         "dt": DecisionTreeClassifier(random_state=SEED).fit(X_train,y_train),
         "rfc": RandomForestClassifier(random_state=SEED).fit(X_train,y_train),
-        "svc": LinearSVC(random_state=SEED).fit(X_train,y_train),
+        "svc": SVC(random_state=SEED).fit(X_train,y_train),
         "lr": LogisticRegression(random_state=SEED).fit(X_train,y_train),
         "gbc": GradientBoostingClassifier(random_state=SEED).fit(X_train,y_train),
         "nn": nn,
