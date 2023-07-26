@@ -6,7 +6,7 @@
 @REM - cmd.exe to be initialized with conda init
 
 @REM Define here the path to your conda installation
-set CONDAPATH=C:\Users\n10599070\Miniconda3
+set CONDAPATH=C:\Users\Miniconda3
 @REM Define here the name of the environment
 set ENVNAME=xai
 
@@ -99,7 +99,7 @@ call %CONDAPATH%\Scripts\activate.bat %ENVPATH%
 
 @REM RUN PGD Attack for 10 times
 
-python 2_generate_ae.py --pgd True --times 0
+@REM python 2_generate_ae.py --pgd True --times 0
 @REM python 2_generate_ae.py --pgd True --times 1
 @REM python 2_generate_ae.py --pgd True --times 2
 @REM python 2_generate_ae.py --pgd True --times 3
