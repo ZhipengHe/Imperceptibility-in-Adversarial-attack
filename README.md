@@ -1,14 +1,10 @@
-# Imperceptibility in Adversarial attack
-
-> Submission for ICSOC-23 Focus Area 1
-
+# Investigating Imperceptibility of Adversarial Attacks on Tabular Data: An Empirical Analysis
 
 
 ## Abstract
 
 Adversarial attacks are a potential threat to machine learning models, as they can cause the model to make incorrect predictions by introducing imperceptible perturbations to the input data. Adversarial attacks are extensively explored in the literature for image data but not for tabular data, which is low-dimensional and heterogeneous. To address this gap, we propose a set of properties for evaluating the imperceptibility of adversarial attacks on tabular data. These properties are defined to capture four perspectives of perturbed data: *proximity* to the original input, *sparsity* of alterations, *deviation* to datapoints in the original dataset, and *sensitivity* of altering sensitive features. We evaluate the performance and imperceptibility of seven white-box adversarial attack methods and their variants using different machine learning models on tabular data. As an insightful finding from our evaluation, it is challenging to craft adversarial examples that are both the most effective and least perceptible due to a trade-off between imperceptibility and performance. Furthermore, optimization-based attacks, such as the C\&W $\ell_2$ attack, are preferred as the primary choice for crafting imperceptible adversarial examples on tabular data.
 
-![](./asserts/images/Roadmap.png)
 
 ## Data Profiling
 
